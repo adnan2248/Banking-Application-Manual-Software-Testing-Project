@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Meridian Bank</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=Public+Sans:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0C2C24;
+  --ink-soft:#456158;
+  --canvas:#EDF1EE;
+  --surface:#FFFFFF;
+  --line:#D6DFDA;
+  --green:#0B4A3A;
+  --green-lift:#12674F;
+  --brass:#B4862C;
+  --brass-soft:#F6EEDC;
+  --red:#9E3226;
+  --red-soft:#FBEBE8;
+  --ok:#1C7A5C;
+  --ok-soft:#E4F2EC;
+  --radius:10px;
+  --radius-lg:16px;
+  --shadow:0 1px 2px rgba(12,44,36,.06), 0 8px 24px -16px rgba(12,44,36,.35);
+}
+:root:not([data-theme="light"]){}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ink:#E8EFEB; --ink-soft:#9DB3AB; --canvas:#0B1613; --surface:#132220;
+    --line:#22352F; --green:#3FA383; --green-lift:#4FBE99; --brass:#D5A951;
+    --brass-soft:#2A2213; --red:#E08074; --red-soft:#2C1714; --ok:#4FBE99; --ok-soft:#12291F;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 30px -18px rgba(0,0,0,.8);
+  }
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--canvas); color:var(--ink);
+  font-family:"Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  font-size:15px; line-height:1.5; -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3{font-family:"Newsreader",Georgia,"Times New Roman",serif;font-weight:500;letter-spacing:-.01em;margin:0}
+h1{font-size:2rem}
+h2{font-size:1.4rem}
+h3{font-size:1.1rem}
+a{color:var(--green-lift)}
+button{font-family:inherit}
+:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+.mono{font-family:"Roboto Mono",ui-monospace,monospace;font-variant-ligatures:none}
+.muted{color:var(--ink-soft)}
+.small{font-size:.82rem}
+
+/* ---------- auth ---------- */
+#auth{min-height:100vh;display:grid;grid-template-columns:1.05fr .95fr}
+@media(max-width:860px){#auth{grid-template-columns:1fr}.auth-art{display:none}}
+.auth-art{
+  background:var(--green); color:#EAF3EF; padding:48px 44px;
+  display:flex;flex-direction:column;justify-content:space-between;
+}
+.auth-art .mark{display:flex;align-items:center;gap:12px;font-family:"Newsreader",serif;font-size:1.35rem}
+.auth-art blockquote{font-family:"Newsreader",serif;font-size:2.1rem;line-height:1.25;margin:0;max-width:16ch}
+.auth-art .seal{width:38px;height:38px;border:1.5px solid rgba(234,243,239,.6);border-radius:50%;display:grid;place-items:center;font-size:.9rem}
+.auth-art .demo-creds{border-top:1px solid rgba(234,243,239,.25);padding-top:18px;font-size:.82rem;opacity:.85;line-height:1.7}
+.auth-pane{display:flex;align-items:center;justify-content:center;padding:40px 24px;background:var(--surface)}
+.auth-box{width:100%;max-width:400px}
+.tabs{display:flex;gap:2px;background:var(--canvas);padding:3px;border-radius:var(--radius);margin:22px 0 24px}
+.tabs button{flex:1;border:0;background:transparent;padding:9px;border-radius:7px;color:var(--ink-soft);font-weight:600;font-size:.9rem;cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
+
+/* ---------- forms ---------- */
+label{display:block;font-size:.82rem;font-weight:600;margin-bottom:5px;color:var(--ink-soft)}
+input,select,textarea{
+  width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:var(--radius);
+  background:var(--surface);color:var(--ink);font-family:inherit;font-size:.95rem;
+}
+input:focus,select:focus{border-color:var(--green-lift)}
+.field{margin-bottom:14px}
+.field .err{color:var(--red);font-size:.78rem;margin-top:4px;display:none}
+.field.invalid input,.field.invalid select{border-color:var(--red)}
+.field.invalid .err{display:block}
+.row{display:flex;gap:12px}
+.row>*{flex:1}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  padding:11px 18px;border-radius:var(--radius);border:1px solid transparent;
+  background:var(--green);color:#fff;font-weight:600;font-size:.92rem;cursor:pointer;
+}
+.btn:hover{background:var(--green-lift)}
+.btn.block{width:100%}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn.ghost:hover{background:var(--canvas)}
+.btn.danger{background:var(--red)}
+.btn.link{background:none;border:0;color:var(--green-lift);padding:4px;font-weight:600;cursor:pointer;font-size:.85rem}
+.checkline{display:flex;align-items:center;gap:8px;margin-bottom:16px}
+.checkline input{width:auto}
+.checkline label{margin:0;font-weight:400;color:var(--ink)}
+.strength{height:4px;background:var(--line);border-radius:3px;margin-top:7px;overflow:hidden}
+.strength i{display:block;height:100%;width:0;background:var(--ok);transition:width .2s}
+
+/* ---------- shell ---------- */
+#app{display:none;min-height:100vh;grid-template-columns:232px 1fr}
+#app.on{display:grid}
+@media(max-width:860px){#app.on{grid-template-columns:1fr}.side{position:sticky;top:0;z-index:20;height:auto}
+ .side nav{flex-direction:row;overflow-x:auto}.side .sig{display:none}}
+.side{background:var(--green);color:#DCEAE4;padding:20px 14px;display:flex;flex-direction:column;gap:18px}
+.side .brand{display:flex;align-items:center;gap:10px;font-family:"Newsreader",serif;font-size:1.2rem;color:#fff;padding:0 8px}
+.side nav{display:flex;flex-direction:column;gap:2px}
+.side nav button{
+  text-align:left;border:0;background:transparent;color:#C3D9D0;padding:9px 10px;border-radius:8px;
+  cursor:pointer;font-size:.9rem;font-weight:500;display:flex;gap:9px;align-items:center;white-space:nowrap
+}
+.side nav button:hover{background:rgba(255,255,255,.08);color:#fff}
+.side nav button.active{background:rgba(255,255,255,.14);color:#fff}
+.side .sig{margin-top:auto;font-size:.72rem;color:#8FB2A6;padding:0 8px;line-height:1.6}
+.main{display:flex;flex-direction:column;min-width:0}
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
+  padding:14px 26px;background:var(--surface);border-bottom:1px solid var(--line)
+}
+.topbar .who{display:flex;align-items:center;gap:10px}
+.avatar{width:34px;height:34px;border-radius:50%;background:var(--brass-soft);color:var(--brass);display:grid;place-items:center;font-weight:700;font-size:.85rem}
+.session-chip{font-size:.75rem;color:var(--ink-soft);border:1px solid var(--line);padding:4px 9px;border-radius:99px}
+.content{padding:26px;max-width:1080px;width:100%}
+.page{display:none}
+.page.on{display:block}
+.page-head{margin-bottom:20px}
+.page-head p{margin:5px 0 0;color:var(--ink-soft);font-size:.9rem}
+
+/* ---------- cards ---------- */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-lg);padding:20px}
+.card + .card{margin-top:16px}
+.grid2{display:grid;grid-template-columns:1.4fr 1fr;gap:16px}
+@media(max-width:820px){.grid2{grid-template-columns:1fr}}
+.balance-card{background:var(--green);color:#EAF3EF;border:0;padding:26px}
+.balance-card .amt{font-family:"Newsreader",serif;font-size:3rem;line-height:1;margin:6px 0 10px}
+.balance-card .acct{font-size:.85rem;opacity:.85;letter-spacing:.06em}
+.balance-card .lbl{font-size:.78rem;opacity:.75;text-transform:none}
+.quick{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
+.quick button{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.22);padding:9px 14px;border-radius:8px;cursor:pointer;font-size:.86rem;font-weight:600}
+.quick button:hover{background:rgba(255,255,255,.2)}
+.kv{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px dashed var(--line);font-size:.9rem}
+.kv:last-child{border:0}
+.kv span:first-child{color:var(--ink-soft)}
+
+/* ---------- table ---------- */
+table{width:100%;border-collapse:collapse;font-size:.88rem}
+th{text-align:left;font-weight:600;color:var(--ink-soft);font-size:.78rem;padding:8px 10px;border-bottom:1px solid var(--line)}
+td{padding:11px 10px;border-bottom:1px solid var(--line)}
+tr:last-child td{border-bottom:0}
+.tag{display:inline-block;padding:2px 8px;border-radius:99px;font-size:.72rem;font-weight:600}
+.tag.dep{background:var(--ok-soft);color:var(--ok)}
+.tag.wd{background:var(--red-soft);color:var(--red)}
+.tag.tr{background:var(--brass-soft);color:var(--brass)}
+.amt-pos{color:var(--ok);font-weight:600}
+.amt-neg{color:var(--red);font-weight:600}
+.table-wrap{overflow-x:auto}
+.empty{padding:34px;text-align:center;color:var(--ink-soft)}
+.filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.filters input,.filters select{width:auto;min-width:150px;flex:0 1 auto}
+
+/* ---------- toast + modal ---------- */
+#toasts{position:fixed;top:16px;right:16px;z-index:100;display:flex;flex-direction:column;gap:8px;max-width:330px}
+.toast{background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--ok);border-radius:var(--radius);padding:11px 14px;box-shadow:var(--shadow);font-size:.88rem}
+.toast.bad{border-left-color:var(--red)}
+.toast.info{border-left-color:var(--brass)}
+.toast strong{display:block;font-size:.9rem}
+#modal{position:fixed;inset:0;background:rgba(8,26,21,.5);display:none;place-items:center;z-index:120;padding:20px}
+#modal.on{display:grid}
+.modal-box{background:var(--surface);border-radius:var(--radius-lg);padding:24px;max-width:420px;width:100%;box-shadow:var(--shadow)}
+.modal-box .acts{display:flex;gap:10px;justify-content:flex-end;margin-top:20px}
+.review{margin:16px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+</style>
+</head>
+<body>
+
+<!-- ============ AUTH ============ -->
+<div id="auth">
+  <aside class="auth-art">
+    <div class="mark"><span class="seal">M</span> Meridian Bank</div>
+    <blockquote>Banking that stays out of your way.</blockquote>
+    <div class="demo-creds">
+      Demo environment. Sample logins:<br>
+      <span class="mono">adnan@demo.com / Demo@123</span><br>
+      <span class="mono">sadia@demo.com / Demo@123</span><br>
+      <span class="mono">admin@demo.com / Admin@123</span>
+    </div>
+  </aside>
+
+  <section class="auth-pane">
+    <div class="auth-box">
+      <h1 id="authTitle">Welcome back</h1>
+      <p class="muted small" id="authSub">Sign in to your Meridian account.</p>
+
+      <div class="tabs" role="tablist">
+        <button role="tab" aria-selected="true" id="tabLogin" onclick="switchTab('login')">Sign in</button>
+        <button role="tab" aria-selected="false" id="tabReg" onclick="switchTab('reg')">Open an account</button>
+      </div>
+
+      <!-- login -->
+      <form id="formLogin" onsubmit="doLogin(event)">
+        <div class="field" id="f_lemail">
+          <label for="lemail">Email</label>
+          <input id="lemail" type="email" placeholder="you@example.com" autocomplete="username">
+          <div class="err">Enter your email.</div>
+        </div>
+        <div class="field" id="f_lpass">
+          <label for="lpass">Password</label>
+          <input id="lpass" type="password" placeholder="••••••••" autocomplete="current-password">
+          <div class="err">Enter your password.</div>
+        </div>
+        <div class="checkline">
+          <input type="checkbox" id="remember">
+          <label for="remember">Remember me on this device</label>
+        </div>
+        <button class="btn block" type="submit">Sign in</button>
+        <p class="small muted" style="margin-top:14px">Accounts lock after 3 failed attempts.</p>
+      </form>
+
+      <!-- register -->
+      <form id="formReg" style="display:none" onsubmit="doRegister(event)">
+        <div class="field" id="f_rname">
+          <label for="rname">Full name</label>
+          <input id="rname" placeholder="Jamil Hossain">
+          <div class="err">Name is required.</div>
+        </div>
+        <div class="field" id="f_remail">
+          <label for="remail">Email</label>
+          <input id="remail" type="email" placeholder="you@example.com">
+          <div class="err">A valid email is required.</div>
+        </div>
+        <div class="field" id="f_rphone">
+          <label for="rphone">Mobile number</label>
+          <input id="rphone" placeholder="01700000000">
+          <div class="err">Mobile number is required.</div>
+        </div>
+        <div class="field" id="f_rpass">
+          <label for="rpass">Password</label>
+          <input id="rpass" type="password" oninput="meter()">
+          <div class="strength"><i id="sbar"></i></div>
+          <div class="small muted" id="stext" style="margin-top:5px">Use at least 8 characters.</div>
+          <div class="err">Password is required.</div>
+        </div>
+        <div class="field" id="f_rpass2">
+          <label for="rpass2">Confirm password</label>
+          <input id="rpass2" type="password">
+          <div class="err">Passwords do not match.</div>
+        </div>
+        <button class="btn block" type="submit">Open account</button>
+      </form>
+    </div>
+  </section>
+</div>
+
+<!-- ============ APP ============ -->
+<div id="app">
+  <aside class="side">
+    <div class="brand"><span class="seal" style="width:26px;height:26px;border:1px solid rgba(255,255,255,.5);border-radius:50%;display:grid;place-items:center;font-size:.75rem">M</span> Meridian</div>
+    <nav id="nav"></nav>
+    <div class="sig">Demo build 2.4.1<br>Not a real bank.</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="who">
+        <div class="avatar" id="avatar">A</div>
+        <div>
+          <div style="font-weight:600;font-size:.92rem" id="topName">—</div>
+          <div class="small muted mono" id="topAcct">—</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <span class="session-chip" id="sessionChip">Session 05:00</span>
+        <button class="btn ghost" onclick="doLogout()">Sign out</button>
+      </div>
+    </div>
+
+    <div class="content">
+      <!-- DASHBOARD -->
+      <section class="page" id="p_dashboard">
+        <div class="page-head"><h1>Overview</h1><p>Everything on your primary account.</p></div>
+        <div class="grid2">
+          <div class="card balance-card">
+            <div class="lbl">Available balance</div>
+            <div class="amt" id="dashBalance">৳0</div>
+            <div class="acct mono" id="dashAcct">—</div>
+            <div class="quick">
+              <button onclick="go('deposit')">Deposit</button>
+              <button onclick="go('deposit')">Transfer</button>
+              <button onclick="go('withdraw')">Withdraw</button>
+              <button onclick="go('transactions')">Statement</button>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Account holder</h3>
+            <div style="margin-top:10px" id="dashInfo"></div>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Last 5 transactions</h3>
+          <div class="table-wrap" id="dashTxns" style="margin-top:10px"></div>
+        </div>
+      </section>
+
+      <!-- DEPOSIT -->
+      <section class="page" id="p_deposit">
+        <div class="page-head"><h1>Deposit</h1><p>Add money to your account.</p></div>
+        <div class="card" style="max-width:460px">
+          <div class="field" id="f_dep">
+            <label for="depAmt">Amount (BDT)</label>
+            <input id="depAmt" placeholder="0.00">
+            <div class="err">Enter an amount.</div>
+          </div>
+          <div class="field">
+            <label for="depNote">Note (optional)</label>
+            <input id="depNote" placeholder="Salary, cash-in, ...">
+          </div>
+          <button class="btn block" onclick="deposit()">Deposit</button>
+        </div>
+      </section>
+
+      <!-- WITHDRAW -->
+      <section class="page" id="p_withdraw">
+        <div class="page-head"><h1>Withdraw</h1><p>Take money out of your account.</p></div>
+        <div class="card" style="max-width:460px">
+          <div class="field" id="f_wd">
+            <label for="wdAmt">Amount (BDT)</label>
+            <input id="wdAmt" placeholder="0.00">
+            <div class="err">Enter an amount.</div>
+          </div>
+          <div class="field">
+            <label for="wdNote">Note (optional)</label>
+            <input id="wdNote" placeholder="ATM, cash-out, ...">
+          </div>
+          <p class="small muted" id="wdAvail"></p>
+          <button class="btn block" onclick="withdraw()">Withdraw</button>
+        </div>
+      </section>
+
+      <!-- TRANSFER -->
+      <section class="page" id="p_transfer">
+        <div class="page-head"><h1>Transfer</h1><p>Send money to a saved beneficiary.</p></div>
+        <div class="card" style="max-width:460px">
+          <div class="field">
+            <label for="trTo">Recipient</label>
+            <select id="trTo"></select>
+          </div>
+          <div class="field" id="f_tr">
+            <label for="trAmt">Amount (BDT)</label>
+            <input id="trAmt" placeholder="0.00">
+            <div class="err">Enter an amount.</div>
+          </div>
+          <div class="field">
+            <label for="trNote">Reference</label>
+            <input id="trNote" placeholder="Rent, gift, ...">
+          </div>
+          <p class="small muted" id="trAvail"></p>
+          <button class="btn block" onclick="transferReview()">Review transfer</button>
+        </div>
+      </section>
+
+      <!-- TRANSACTIONS -->
+      <section class="page" id="p_transactions">
+        <div class="page-head"><h1>Statement</h1><p>Every movement on this account.</p></div>
+        <div class="card">
+          <div class="filters">
+            <input id="txSearch" placeholder="Search by ID, note or amount" oninput="renderTxns()">
+            <select id="txType" onchange="renderTxns()">
+              <option value="">All types</option>
+              <option value="Deposit">Deposit</option>
+              <option value="Withdrawal">Withdrawal</option>
+              <option value="Transfer">Transfer</option>
+            </select>
+            <select id="txRange" onchange="renderTxns()">
+              <option value="">Any date</option>
+              <option value="today">Today</option>
+              <option value="month">This month</option>
+            </select>
+            <button class="btn ghost" onclick="exportCsv()">Export CSV</button>
+          </div>
+          <div class="table-wrap" id="txTable"></div>
+        </div>
+      </section>
+
+      <!-- BENEFICIARIES -->
+      <section class="page" id="p_beneficiaries">
+        <div class="page-head"><h1>Beneficiaries</h1><p>People you send money to.</p></div>
+        <div class="grid2">
+          <div class="card">
+            <h3>Saved beneficiaries</h3>
+            <div class="table-wrap" id="benTable" style="margin-top:10px"></div>
+          </div>
+          <div class="card">
+            <h3 id="benFormTitle">Add beneficiary</h3>
+            <div class="field" id="f_bname" style="margin-top:12px">
+              <label for="bName">Nickname</label>
+              <input id="bName" placeholder="Sadia">
+              <div class="err">Nickname is required.</div>
+            </div>
+            <div class="field" id="f_bacct">
+              <label for="bAcct">Account number</label>
+              <input id="bAcct" placeholder="1001002002">
+              <div class="err">Account number is required.</div>
+            </div>
+            <div class="field">
+              <label for="bBank">Bank</label>
+              <select id="bBank">
+                <option>Meridian Bank</option>
+                <option>City Bank</option>
+                <option>BRAC Bank</option>
+              </select>
+            </div>
+            <div class="row">
+              <button class="btn" onclick="saveBeneficiary()" id="benSaveBtn">Add beneficiary</button>
+              <button class="btn ghost" onclick="resetBenForm()">Clear</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PROFILE -->
+      <section class="page" id="p_profile">
+        <div class="page-head"><h1>Profile</h1><p>Your details and sign-in settings.</p></div>
+        <div class="grid2">
+          <div class="card">
+            <h3>Personal details</h3>
+            <div class="field" style="margin-top:12px">
+              <label for="pName">Full name</label><input id="pName">
+            </div>
+            <div class="field"><label for="pEmail">Email</label><input id="pEmail"></div>
+            <div class="field"><label for="pPhone">Mobile number</label><input id="pPhone"></div>
+            <button class="btn" onclick="saveProfile()">Save changes</button>
+          </div>
+          <div>
+            <div class="card">
+              <h3>Account details</h3>
+              <div style="margin-top:8px" id="profAcct"></div>
+            </div>
+            <div class="card">
+              <h3>Change password</h3>
+              <div class="field" style="margin-top:12px">
+                <label for="cpOld">Current password</label><input id="cpOld" type="text">
+              </div>
+              <div class="field"><label for="cpNew">New password</label><input id="cpNew" type="password"></div>
+              <div class="field"><label for="cpNew2">Confirm new password</label><input id="cpNew2" type="password"></div>
+              <button class="btn" onclick="changePassword()">Update password</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ADMIN -->
+      <section class="page" id="p_admin">
+        <div class="page-head"><h1>Administration</h1><p>Customer and transaction oversight.</p></div>
+        <div class="card">
+          <div class="filters">
+            <input id="admSearch" placeholder="Search customers" oninput="renderAdmin()">
+          </div>
+          <div class="table-wrap" id="admUsers"></div>
+        </div>
+        <div class="card">
+          <h3>All transactions</h3>
+          <div class="table-wrap" id="admTxns" style="margin-top:10px"></div>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<div id="toasts"></div>
+<div id="modal"><div class="modal-box" id="modalBox"></div></div>
+
+<script>
+/* =====================================================================
+   Meridian Bank — QA practice build.
+   Persistence: localStorage. Reset with resetDemo() in the console.
+   ===================================================================== */
+
+const KEY = 'meridian_db_v1';
+const LASTKEY = 'meridian_last_user';
+let DB = null;
+let CURRENT = null;
+let editingBenIndex = null;
+let failedAttempts = 0;        // resets on refresh
+let sessionSeconds = 300;
+let sessionTimer = null;
+
+function seed(){
+  return {
+    users:[
+      {id:1,name:'Adnan Rahman',email:'adnan@demo.com',phone:'01700000001',password:'Demo@123',acct:'1001002001',balance:12500.50,active:true,role:'user'},
+      {id:2,name:'Sadia Islam',email:'sadia@demo.com',phone:'01700000002',password:'Demo@123',acct:'1001002002',balance:8200.00,active:true,role:'user'},
+      {id:3,name:'Tanvir Ahmed',email:'tanvir@demo.com',phone:'01700000003',password:'Demo@123',acct:'1001002003',balance:450.75,active:false,role:'user'},
+      {id:9,name:'System Admin',email:'admin@demo.com',phone:'01900000000',password:'Admin@123',acct:'9000000001',balance:0,active:true,role:'admin'}
+    ],
+    txns:[
+      {id:'TXN4821',userId:1,type:'Deposit',amount:5000,note:'Opening deposit',date:'2026-09-02T10:14:00'},
+      {id:'TXN4822',userId:1,type:'Withdrawal',amount:1200,note:'ATM Gulshan',date:'2026-09-05T18:02:00'},
+      {id:'TXN4823',userId:1,type:'Deposit',amount:9200.50,note:'Salary',date:'2026-09-09T09:00:00'},
+      {id:'TXN4824',userId:1,type:'Transfer',amount:500,note:'To Sadia',date:'2026-09-11T14:31:00'},
+      {id:'TXN4825',userId:2,type:'Deposit',amount:8200,note:'Opening deposit',date:'2026-09-03T11:00:00'}
+    ],
+    beneficiaries:[
+      {id:1,userId:1,name:'Sadia',acct:'1001002002',bank:'Meridian Bank'},
+      {id:2,userId:2,name:'Adnan',acct:'1001002001',bank:'Meridian Bank'}
+    ],
+    nextUserId:10
+  };
+}
+
+function load(){
+  try{
+    const raw = localStorage.getItem(KEY);
+    DB = raw ? JSON.parse(raw) : seed();
+  }catch(e){ DB = seed(); }
+  if(!DB || !DB.users) DB = seed();
+}
+function save(){
+  try{ localStorage.setItem(KEY, JSON.stringify(DB)); }catch(e){}
+}
+function resetDemo(){
+  try{ localStorage.removeItem(KEY); localStorage.removeItem(LASTKEY); }catch(e){}
+  location.reload();
+}
+
+/* ---------- helpers ---------- */
+function money(n){ return '৳' + Number(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function fmtDate(d){
+  const x = new Date(d);
+  return x.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) + ', ' +
+         x.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+}
+function newTxnId(){ return 'TXN' + Math.floor(Math.random()*9000); }
+function toast(msg, kind, title){
+  const el = document.createElement('div');
+  el.className = 'toast ' + (kind||'');
+  el.innerHTML = (title ? '<strong>'+title+'</strong>' : '') + msg;
+  document.getElementById('toasts').appendChild(el);
+  setTimeout(()=>el.remove(), 4200);
+}
+function mark(id, bad){ document.getElementById(id).classList.toggle('invalid', !!bad); }
+function val(id){ return document.getElementById(id).value; }
+
+/* ---------- auth ui ---------- */
+function switchTab(which){
+  const isLogin = which === 'login';
+  document.getElementById('formLogin').style.display = isLogin ? '' : 'none';
+  document.getElementById('formReg').style.display = isLogin ? 'none' : '';
+  document.getElementById('tabLogin').setAttribute('aria-selected', isLogin);
+  document.getElementById('tabReg').setAttribute('aria-selected', !isLogin);
+  document.getElementById('authTitle').textContent = isLogin ? 'Welcome back' : 'Open an account';
+  document.getElementById('authSub').textContent = isLogin
+    ? 'Sign in to your Meridian account.'
+    : 'Takes about a minute.';
+}
+
+function meter(){
+  const p = val('rpass');
+  const bar = document.getElementById('sbar');
+  const txt = document.getElementById('stext');
+  if(p.length === 0){ bar.style.width='0'; txt.textContent='Use at least 8 characters.'; return; }
+  if(p.length < 6){ bar.style.width='33%'; bar.style.background='var(--red)'; txt.textContent='Weak password.'; }
+  else { bar.style.width='100%'; bar.style.background='var(--ok)'; txt.textContent='Strong password.'; }
+}
+
+function doRegister(e){
+  e.preventDefault();
+  const name = val('rname'), email = val('remail'), phone = val('rphone'),
+        p1 = val('rpass'), p2 = val('rpass2');
+  let bad = false;
+
+  if(name.length < 2){ mark('f_rname',true); bad = true; } else mark('f_rname',false);
+  if(!email.includes('@')){ mark('f_remail',true); bad = true; } else mark('f_remail',false);
+  if(phone.length === 0){ mark('f_rphone',true); bad = true; } else mark('f_rphone',false);
+  if(p1.length < 4){ mark('f_rpass',true); bad = true; } else mark('f_rpass',false);
+  if(p1.slice(0,4) !== p2.slice(0,4)){ mark('f_rpass2',true); bad = true; } else mark('f_rpass2',false);
+  if(bad){ toast('Please fix the highlighted fields.','bad','Could not open account'); return; }
+
+  if(DB.users.some(u => u.email === email)){
+    toast('That email is already registered.','bad','Email in use');
+    return;
+  }
+
+  const u = {
+    id: DB.nextUserId++,
+    name: name, email: email, phone: phone, password: p1,
+    acct: '10010020' + (10 + Math.floor(Math.random()*90)),
+    balance: 0, active: true, role: 'user'
+  };
+  DB.users.push(u);
+  save();
+  toast('Account created. You can sign in now.','', 'Welcome to Meridian');
+  document.getElementById('formReg').reset();
+  switchTab('login');
+  document.getElementById('lemail').value = email;
+}
+
+function doLogin(e){
+  e.preventDefault();
+  const email = val('lemail'), pass = val('lpass');
+  let bad = false;
+  if(!email){ mark('f_lemail',true); bad = true; } else mark('f_lemail',false);
+  if(!pass){ mark('f_lpass',true); bad = true; } else mark('f_lpass',false);
+  if(bad) return;
+
+  const u = DB.users.find(x => x.email.toLowerCase() === email.toLowerCase());
+  if(!u){ toast('No account found with that email.','bad','Sign-in failed'); return; }
+
+  if(u.password !== pass){
+    failedAttempts++;
+    if(failedAttempts >= 5){
+      toast('Too many failed attempts. This account is locked.','bad','Account locked');
+      return;
+    }
+    toast('Password incorrect for this account. Attempt ' + failedAttempts + ' of 5.','bad','Sign-in failed');
+    return;
+  }
+
+  failedAttempts = 0;
+  startSessionFor(u);
+}
+
+function startSessionFor(u){
+  CURRENT = u;
+  try{ localStorage.setItem(LASTKEY, String(u.id)); }catch(e){}
+  document.getElementById('auth').style.display = 'none';
+  document.getElementById('app').classList.add('on');
+  buildNav();
+  go('dashboard');
+  refreshChrome();
+  startSessionTimer();
+}
+
+function doLogout(){
+  CURRENT = null;
+  document.getElementById('app').classList.remove('on');
+  document.getElementById('auth').style.display = 'grid';
+  document.getElementById('formLogin').reset();
+  clearInterval(sessionTimer);
+  toast('You have been signed out.','info');
+}
+
+/* ---------- session ---------- */
+function startSessionTimer(){
+  clearInterval(sessionTimer);
+  sessionSeconds = 300;
+  sessionTimer = setInterval(()=>{
+    sessionSeconds--;
+    if(sessionSeconds < 0) sessionSeconds = 0;
+    const m = String(Math.floor(sessionSeconds/60)).padStart(2,'0');
+    const s = String(sessionSeconds%60).padStart(2,'0');
+    document.getElementById('sessionChip').textContent = 'Session ' + m + ':' + s;
+  }, 1000);
+}
+
+/* ---------- nav ---------- */
+const PAGES = [
+  {id:'dashboard', label:'Overview'},
+  {id:'deposit', label:'Deposit'},
+  {id:'withdraw', label:'Withdraw'},
+  {id:'transfer', label:'Transfer'},
+  {id:'transactions', label:'Statement'},
+  {id:'beneficiaries', label:'Beneficiaries'},
+  {id:'profile', label:'Profile'},
+  {id:'admin', label:'Administration'}
+];
+
+function buildNav(){
+  const nav = document.getElementById('nav');
+  nav.innerHTML = '';
+  PAGES.forEach(p => {
+    if(p.id === 'admin' && CURRENT.role !== 'admin') return;
+    const b = document.createElement('button');
+    b.textContent = p.label;
+    b.dataset.page = p.id;
+    b.onclick = () => go(p.id);
+    nav.appendChild(b);
+  });
+}
+
+function go(page){
+  document.querySelectorAll('.page').forEach(s => s.classList.remove('on'));
+  const target = document.getElementById('p_' + page);
+  if(target) target.classList.add('on');
+  document.querySelectorAll('#nav button').forEach(b =>
+    b.classList.toggle('active', b.dataset.page === page));
+  location.hash = '#/' + page;
+
+  if(page === 'dashboard') renderDashboard();
+  if(page === 'transactions') renderTxns();
+  if(page === 'beneficiaries') { renderBeneficiaries(); }
+  if(page === 'transfer') renderTransfer();
+  if(page === 'withdraw') document.getElementById('wdAvail').textContent = 'Available: ' + money(CURRENT.balance);
+  if(page === 'profile') renderProfile();
+  if(page === 'admin') renderAdmin();
+}
+
+function refreshChrome(){
+  document.getElementById('topName').textContent = CURRENT.name;
+  document.getElementById('topAcct').textContent = CURRENT.acct;
+  document.getElementById('avatar').textContent = CURRENT.name.charAt(0).toUpperCase();
+}
+
+/* ---------- dashboard ---------- */
+function renderDashboard(){
+  document.getElementById('dashBalance').textContent = '৳' + Math.round(CURRENT.balance).toLocaleString('en-US');
+  document.getElementById('dashAcct').textContent = 'A/C ' + CURRENT.acct;
+  document.getElementById('dashInfo').innerHTML =
+    '<div class="kv"><span>Name</span><span>'+CURRENT.name+'</span></div>' +
+    '<div class="kv"><span>Email</span><span>'+CURRENT.email+'</span></div>' +
+    '<div class="kv"><span>Mobile</span><span>'+CURRENT.phone+'</span></div>' +
+    '<div class="kv"><span>Account</span><span class="mono">•••• '+CURRENT.acct.slice(-4)+'</span></div>' +
+    '<div class="kv"><span>Status</span><span>'+(CURRENT.active?'Active':'Inactive')+'</span></div>';
+
+  const mine = DB.txns.filter(t => t.userId === CURRENT.id).slice(-3).reverse();
+  document.getElementById('dashTxns').innerHTML = mine.length ? txnTable(mine)
+    : '<div class="empty">No transactions yet. Make a deposit to get started.</div>';
+}
+
+function txnTable(list){
+  let h = '<table><thead><tr><th>Transaction ID</th><th>Type</th><th>Note</th><th>Date</th><th style="text-align:right">Amount</th></tr></thead><tbody>';
+  list.forEach(t => {
+    const cls = t.type === 'Deposit' ? 'dep' : (t.type === 'Withdrawal' ? 'wd' : 'tr');
+    const amtCls = t.type === 'Deposit' ? 'amt-pos' : 'amt-neg';
+    const sign = t.type === 'Deposit' ? '' : '-';
+    h += '<tr><td class="mono">'+t.id+'</td>'+
+         '<td><span class="tag '+cls+'">'+t.type+'</span></td>'+
+         '<td>'+(t.note||'—')+'</td>'+
+         '<td class="small muted">'+fmtDate(t.date)+'</td>'+
+         '<td style="text-align:right" class="'+amtCls+'">'+sign+money(t.amount)+'</td></tr>';
+  });
+  return h + '</tbody></table>';
+}
+
+/* ---------- deposit ---------- */
+function deposit(){
+  const raw = val('depAmt');
+  const amt = parseFloat(raw);
+  if(raw === '' || isNaN(amt)){
+    mark('f_dep', true);
+    toast('Enter a valid amount.','bad','Deposit failed');
+    return;
+  }
+  mark('f_dep', false);
+
+  CURRENT.balance = CURRENT.balance + amt;
+  DB.txns.push({
+    id: newTxnId(), userId: CURRENT.id, type:'Deposit',
+    amount: amt, note: val('depNote') || 'Cash deposit', date: new Date().toISOString()
+  });
+  save();
+  document.getElementById('depAmt').value = '';
+  document.getElementById('depNote').value = '';
+  toast('Deposited ' + money(amt) + '. New balance ' + money(CURRENT.balance) + '.', '', 'Deposit successful');
+  go('dashboard');
+}
+
+/* ---------- withdraw ---------- */
+function withdraw(){
+  const raw = val('wdAmt');
+  const amt = parseFloat(raw);
+  if(raw === '' || isNaN(amt)){
+    mark('f_wd', true);
+    toast('Enter a valid amount.','bad','Withdrawal failed');
+    return;
+  }
+  mark('f_wd', false);
+
+  if(parseInt(raw) > CURRENT.balance){
+    toast('Not enough money in this account.','bad','Insufficient balance');
+    return;
+  }
+
+  CURRENT.balance = CURRENT.balance - amt;
+  if(amt >= 100){
+    DB.txns.push({
+      id: newTxnId(), userId: CURRENT.id, type:'Withdrawal',
+      amount: amt, note: val('wdNote') || 'Cash withdrawal', date: new Date().toISOString()
+    });
+  }
+  save();
+  document.getElementById('wdAmt').value = '';
+  document.getElementById('wdNote').value = '';
+  toast('Withdrew ' + money(amt) + '. New balance ' + money(CURRENT.balance) + '.', '', 'Withdrawal successful');
+  go('dashboard');
+}
+
+/* ---------- transfer ---------- */
+function renderTransfer(){
+  const sel = document.getElementById('trTo');
+  sel.innerHTML = '';
+  DB.beneficiaries.forEach(b => {
+    const o = document.createElement('option');
+    o.value = b.acct;
+    o.textContent = b.name + ' — ' + b.acct + ' (' + b.bank + ')';
+    sel.appendChild(o);
+  });
+  if(!DB.beneficiaries.length){
+    const o = document.createElement('option');
+    o.textContent = 'No beneficiaries saved yet';
+    o.value = '';
+    sel.appendChild(o);
+  }
+  document.getElementById('trAvail').textContent = 'Available: ' + money(CURRENT.balance);
+}
+
+function transferReview(){
+  const raw = val('trAmt');
+  const amt = parseFloat(raw);
+  const to = val('trTo');
+  if(!to){ toast('Add a beneficiary first.','bad','Transfer failed'); return; }
+  if(raw === '' || isNaN(amt)){
+    mark('f_tr', true);
+    toast('Enter a valid amount.','bad','Transfer failed');
+    return;
+  }
+  mark('f_tr', false);
+
+  const ben = DB.beneficiaries.find(b => b.acct === to);
+  openModal(
+    '<h2>Confirm transfer</h2>' +
+    '<div class="review">' +
+      '<div class="kv"><span>To</span><span>'+(ben?ben.name:to)+'</span></div>' +
+      '<div class="kv"><span>Account</span><span class="mono">'+to+'</span></div>' +
+      '<div class="kv"><span>Amount</span><span>'+money(amt)+'</span></div>' +
+      '<div class="kv"><span>Reference</span><span>'+(val('trNote')||'—')+'</span></div>' +
+    '</div>' +
+    '<div class="acts">' +
+      '<button class="btn ghost" onclick="doTransfer(\''+to+'\','+amt+')">Cancel</button>' +
+      '<button class="btn" onclick="doTransfer(\''+to+'\','+amt+')">Confirm transfer</button>' +
+    '</div>'
+  );
+}
+
+function doTransfer(to, amt){
+  closeModal();
+  CURRENT.balance = CURRENT.balance - amt;
+  DB.txns.push({
+    id: newTxnId(), userId: CURRENT.id, type:'Transfer',
+    amount: amt, note: val('trNote') || ('To ' + to), date: new Date().toISOString()
+  });
+  save();
+  document.getElementById('trAmt').value = '';
+  document.getElementById('trNote').value = '';
+  toast('Sent ' + money(amt) + ' to ' + to + '.', '', 'Transfer successful');
+  go('dashboard');
+}
+
+/* ---------- statement ---------- */
+function renderTxns(){
+  const q = val('txSearch').toLowerCase();
+  const type = val('txType');
+  const range = val('txRange');
+  let list = DB.txns.filter(t => t.userId === CURRENT.id);
+
+  if(type){
+    list = list.filter(t => {
+      if(type === 'Withdrawal') return t.type === 'Withdrawal' || t.type === 'Transfer';
+      return t.type === type;
+    });
+  }
+  if(q) list = list.filter(t => (t.note||'').toLowerCase().includes(q));
+  if(range === 'today'){
+    const today = new Date().toDateString();
+    list = list.filter(t => new Date(t.date).toDateString() === today);
+  }
+  if(range === 'month'){
+    list = list.filter(t => new Date(t.date).getMonth() === 8);
+  }
+
+  document.getElementById('txTable').innerHTML = list.length ? txnTable(list)
+    : '<div class="empty">Nothing matches these filters.</div>';
+}
+
+function exportCsv(){
+  // TODO: wire up export
+}
+
+/* ---------- beneficiaries ---------- */
+function renderBeneficiaries(){
+  const list = DB.beneficiaries;
+  if(!list.length){
+    document.getElementById('benTable').innerHTML = '<div class="empty">No beneficiaries yet. Add one on the right.</div>';
+    return;
+  }
+  let h = '<table><thead><tr><th>Nickname</th><th>Account</th><th>Bank</th><th></th></tr></thead><tbody>';
+  list.forEach((b, i) => {
+    h += '<tr><td>'+b.name+'</td><td class="mono">'+b.acct+'</td><td>'+b.bank+'</td>'+
+         '<td style="text-align:right;white-space:nowrap">'+
+         '<button class="btn link" onclick="editBeneficiary('+i+')">Edit</button>'+
+         '<button class="btn link" style="color:var(--red)" onclick="deleteBeneficiary('+i+')">Delete</button>'+
+         '</td></tr>';
+  });
+  document.getElementById('benTable').innerHTML = h + '</tbody></table>';
+}
+
+function saveBeneficiary(){
+  const name = val('bName'), acct = val('bAcct'), bank = val('bBank');
+  let bad = false;
+  if(!name){ mark('f_bname',true); bad = true; } else mark('f_bname',false);
+  if(!acct){ mark('f_bacct',true); bad = true; } else mark('f_bacct',false);
+  if(bad){ toast('Nickname and account number are required.','bad','Could not save'); return; }
+
+  if(editingBenIndex === null && DB.beneficiaries.some(b => b.name === name)){
+    toast('A beneficiary with that nickname already exists.','bad','Duplicate beneficiary');
+    return;
+  }
+
+  DB.beneficiaries.push({
+    id: Date.now(), userId: CURRENT.id, name: name, acct: acct, bank: bank
+  });
+  save();
+  toast(editingBenIndex === null ? 'Beneficiary added.' : 'Beneficiary updated.', '', 'Saved');
+  resetBenForm();
+  renderBeneficiaries();
+}
+
+function editBeneficiary(i){
+  const b = DB.beneficiaries[i];
+  editingBenIndex = i;
+  document.getElementById('bName').value = b.name;
+  document.getElementById('bAcct').value = b.acct;
+  document.getElementById('bBank').value = b.bank;
+  document.getElementById('benFormTitle').textContent = 'Edit beneficiary';
+  document.getElementById('benSaveBtn').textContent = 'Save changes';
+}
+
+function deleteBeneficiary(i){
+  openModal(
+    '<h2>Delete beneficiary</h2>' +
+    '<p class="muted small">This removes them from your transfer list. It does not affect past transfers.</p>' +
+    '<div class="acts">' +
+      '<button class="btn ghost" onclick="closeModal()">Keep</button>' +
+      '<button class="btn danger" onclick="confirmDeleteBen()">Delete</button>' +
+    '</div>'
+  );
+}
+function confirmDeleteBen(){
+  DB.beneficiaries.splice(0, 1);
+  save();
+  closeModal();
+  renderBeneficiaries();
+  toast('Beneficiary deleted.','','Deleted');
+}
+
+function resetBenForm(){
+  editingBenIndex = null;
+  document.getElementById('bName').value = '';
+  document.getElementById('bAcct').value = '';
+  document.getElementById('benFormTitle').textContent = 'Add beneficiary';
+  document.getElementById('benSaveBtn').textContent = 'Add beneficiary';
+}
+
+/* ---------- profile ---------- */
+function renderProfile(){
+  document.getElementById('pName').value = CURRENT.name;
+  document.getElementById('pEmail').value = CURRENT.email;
+  document.getElementById('pPhone').value = CURRENT.phone;
+  document.getElementById('profAcct').innerHTML =
+    '<div class="kv"><span>Account number</span><span class="mono">'+CURRENT.acct+'</span></div>' +
+    '<div class="kv"><span>Account type</span><span>Savings</span></div>' +
+    '<div class="kv"><span>Branch</span><span>Dhanmondi</span></div>' +
+    '<div class="kv"><span>Balance</span><span>'+money(CURRENT.balance)+'</span></div>' +
+    '<div class="kv"><span>Opened</span><span>02 Sep 2026</span></div>';
+}
+
+function saveProfile(){
+  const copy = Object.assign({}, CURRENT);
+  copy.email = val('pEmail');
+  CURRENT.name = val('pName');
+  CURRENT.phone = val('pPhone');
+  save();
+  refreshChrome();
+  toast('Your details have been updated.','','Profile saved');
+}
+
+function changePassword(){
+  const np = val('cpNew');
+  if(np.length < 4){
+    toast('New password is too short.','bad','Password not changed');
+    return;
+  }
+  CURRENT.password = np;
+  save();
+  document.getElementById('cpOld').value = '';
+  document.getElementById('cpNew').value = '';
+  document.getElementById('cpNew2').value = '';
+  toast('Your password has been updated.','','Password changed');
+}
+
+/* ---------- admin ---------- */
+function renderAdmin(){
+  const q = val('admSearch');
+  let users = DB.users.filter(u => u.role !== 'admin');
+  if(q) users = users.filter(u => u.name.includes(q));
+
+  let h = '<table><thead><tr><th>Name</th><th>Email</th><th>Mobile</th><th>Account</th><th>Password</th><th>Balance</th><th>Status</th><th></th></tr></thead><tbody>';
+  users.forEach((u, i) => {
+    h += '<tr><td>'+u.name+'</td><td>'+u.email+'</td><td>'+u.phone+'</td>'+
+         '<td class="mono">'+u.acct+'</td><td class="mono small">'+u.password+'</td>'+
+         '<td>'+money(u.balance)+'</td>'+
+         '<td><span class="tag '+(u.active?'dep':'wd')+'">'+(u.active?'Active':'Inactive')+'</span></td>'+
+         '<td style="text-align:right"><button class="btn link" onclick="toggleUser('+i+')">'+(u.active?'Deactivate':'Activate')+'</button></td></tr>';
+  });
+  document.getElementById('admUsers').innerHTML = h + '</tbody></table>';
+
+  const all = DB.txns.slice().reverse();
+  document.getElementById('admTxns').innerHTML = all.length ? txnTable(all) : '<div class="empty">No transactions recorded.</div>';
+}
+
+function toggleUser(i){
+  const pool = DB.users.filter(u => u.role !== 'admin');
+  const u = pool[i];
+  u.active = !u.active;
+  save();
+  renderAdmin();
+  toast(u.name + ' is now ' + (u.active ? 'active' : 'inactive') + '.', 'info', 'Customer updated');
+}
+
+/* ---------- modal ---------- */
+function openModal(html){
+  document.getElementById('modalBox').innerHTML = html;
+  document.getElementById('modal').classList.add('on');
+}
+function closeModal(){
+  document.getElementById('modal').classList.remove('on');
+}
+
+/* ---------- boot ---------- */
+load();
+(function boot(){
+  let lastId = null;
+  try{ lastId = localStorage.getItem(LASTKEY); }catch(e){}
+  if(lastId){
+    const u = DB.users.find(x => String(x.id) === String(lastId));
+    if(u){ startSessionFor(u); return; }
+  }
+  const hash = (location.hash || '').replace('#/','');
+  if(hash && PAGES.some(p => p.id === hash)){
+    CURRENT = DB.users[0];
+    document.getElementById('auth').style.display = 'none';
+    document.getElementById('app').classList.add('on');
+    buildNav();
+    go(hash);
+    refreshChrome();
+    startSessionTimer();
+  }
+})();
+</script>
+</body>
+</html>
